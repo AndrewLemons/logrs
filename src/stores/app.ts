@@ -13,11 +13,6 @@ export { activeLogbook, setActiveLogbook };
 const [activeTemplate, setActiveTemplate] = createSignal<Template | null>(null);
 export { activeTemplate, setActiveTemplate };
 
-// Theme
-export type Theme = "light" | "dark" | "system";
-const [theme, setTheme] = createSignal<Theme>("system");
-export { theme, setTheme };
-
 // Toast notifications
 export interface Toast {
   id: number;

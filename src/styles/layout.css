@@ -11,12 +11,22 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+}
+
+.app-drag-region {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  z-index: 1;
 }
 
 .app-content {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-xl) var(--space-2xl);
+  padding: 28px var(--space-2xl) var(--space-xl);
 }
 
 /* ===== Sidebar ===== */
@@ -32,8 +42,13 @@
   user-select: none;
 }
 
+.sidebar-drag-region {
+  height: 28px;
+  flex-shrink: 0;
+}
+
 .sidebar-logo {
-  padding: var(--space-lg);
+  padding: var(--space-sm) var(--space-lg) var(--space-lg);
   font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-sidebar-active);
@@ -76,50 +91,6 @@
 
 .sidebar-nav a svg {
   flex-shrink: 0;
-}
-
-/* ===== Top Bar ===== */
-
-.app-topbar {
-  height: var(--topbar-height);
-  background: var(--color-bg-surface);
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  padding: 0 var(--space-lg);
-  gap: var(--space-md);
-  flex-shrink: 0;
-}
-
-.topbar-title {
-  font-weight: 600;
-  font-size: var(--text-md);
-}
-
-.topbar-badge {
-  margin-left: auto;
-  background: var(--color-bg-elevated);
-  padding: var(--space-xs) 10px;
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-}
-
-.topbar-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  padding: 6px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-}
-
-.topbar-btn:hover {
-  background: var(--color-bg-elevated);
-  color: var(--color-text);
 }
 
 /* ===== Toolbar ===== */

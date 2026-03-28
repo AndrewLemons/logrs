@@ -9,7 +9,8 @@ export default function Sidebar() {
 
   return (
     <nav class="app-sidebar">
-      <div class="sidebar-logo"><Radio size={18} /> LogRS</div>
+      <div class="sidebar-drag-region" data-tauri-drag-region />
+      <div class="sidebar-logo" data-tauri-drag-region><Radio size={18} /> LogRS</div>
 
       <div class="sidebar-nav">
         <A href="/" class={isActive("/") ? "active" : ""} end>

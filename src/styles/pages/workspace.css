@@ -3,10 +3,9 @@
 .workspace {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100% + 28px + var(--space-xl));
   gap: 0;
-  margin: calc(var(--space-xl) * -1) calc(var(--space-2xl) * -1);
-  height: calc(100% + calc(var(--space-xl) * 2));
+  margin: -28px calc(var(--space-2xl) * -1) calc(var(--space-xl) * -1);
 }
 
 /* ===== Station Bar ===== */
@@ -14,7 +13,7 @@
 .station-bar {
   background: var(--color-bg-surface);
   border-bottom: 1px solid var(--color-border);
-  padding: var(--space-sm) var(--space-lg);
+  padding: calc(var(--space-sm) + 28px) var(--space-lg) var(--space-sm);
   flex-shrink: 0;
 }
 

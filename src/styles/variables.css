@@ -71,13 +71,13 @@
 
   /* Layout */
   --sidebar-width: 220px;
-  --topbar-height: 48px;
 
   /* Transition */
   --transition-fast: 0.15s ease;
 }
 
-:root[data-theme="dark"] {
+@media (prefers-color-scheme: dark) {
+  :root {
   --color-bg: #0d1117;
   --color-bg-surface: #161b22;
   --color-bg-elevated: #1c2128;
@@ -107,4 +107,5 @@
 
   --color-toast-bg: #e6edf3;
   --color-toast-text: #0d1117;
+  }
 }

@@ -3,8 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import "./styles/index.css";
 import Sidebar from "./components/layout/Sidebar";
-import TopBar from "./components/layout/TopBar";
-import { toasts, setActiveProfile, setActiveLogbook, setActiveTemplate, setTheme, addToast, setSyncInProgress } from "./stores/app";
+import { toasts, setActiveProfile, setActiveLogbook, setActiveTemplate, addToast, setSyncInProgress } from "./stores/app";
 import { initStationDefaults } from "./stores/session";
 import type { Profile, Logbook, Template } from "./types";
 
@@ -13,11 +12,6 @@ function App(props: ParentProps) {
   let unlistenSyncCompleted: (() => void) | undefined;
 
   onMount(async () => {
-    // Apply theme
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    document.documentElement.dataset.theme = prefersDark ? "dark" : "light";
-    setTheme(prefersDark ? "dark" : "light");
-
     // Load active profile
     try {
       const profile = await invoke<Profile | null>("get_active_profile");
@@ -64,7 +58,7 @@ function App(props: ParentProps) {
     <div class="app-layout">
       <Sidebar />
       <div class="app-main">
-        <TopBar />
+        <div class="app-drag-region" data-tauri-drag-region />
         <div class="app-content">{props.children}</div>
       </div>
       <div class="toast-container">

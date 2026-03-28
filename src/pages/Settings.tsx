@@ -1,7 +1,7 @@
 import { createSignal, onMount, onCleanup, Show } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { addToast, theme, setTheme, syncInProgress } from "../stores/app";
+import { addToast, syncInProgress } from "../stores/app";
 import PageHeader from "../components/shared/PageHeader";
 import type { SyncStatus, SyncProgress } from "../types";
 
@@ -51,14 +51,6 @@ export default function Settings() {
     } catch (_) {}
   }
 
-  function toggleTheme() {
-    const root = document.documentElement;
-    const current = root.getAttribute("data-theme");
-    const next = current === "dark" ? "light" : "dark";
-    root.setAttribute("data-theme", next);
-    setTheme(next as "light" | "dark");
-  }
-
   async function syncPota() {
     setManualSyncing("pota");
     setProgress(null);
@@ -95,16 +87,6 @@ export default function Settings() {
   return (
     <div>
       <PageHeader title="Settings" />
-
-      <div class="card settings-card">
-        <h3>Appearance</h3>
-        <div class="settings-row">
-          <button class="btn btn-secondary" onClick={toggleTheme}>Toggle Theme</button>
-          <span class="settings-row-label">
-            Current: {theme() === "dark" ? "Dark" : "Light"} mode
-          </span>
-        </div>
-      </div>
 
       <div class="card settings-card">
         <h3>Callsign Lookup</h3>
