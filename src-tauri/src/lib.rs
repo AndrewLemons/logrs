@@ -75,6 +75,7 @@ pub fn run() {
             commands::qsos::update_qso,
             commands::qsos::delete_qsos,
             commands::qsos::check_duplicate,
+            commands::qsos::get_all_qso_data,
             // Templates
             commands::templates::get_templates,
             commands::templates::get_template,
@@ -83,6 +84,9 @@ pub fn run() {
             commands::templates::delete_template,
             // Lookup
             commands::lookup::lookup_callsign,
+            commands::lookup::set_qrz_credentials,
+            commands::lookup::get_qrz_credentials_cmd,
+            commands::lookup::test_qrz_credentials,
             // Export/Import
             commands::export::export_adif,
             commands::export::import_adif,

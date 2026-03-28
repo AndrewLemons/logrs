@@ -52,5 +52,8 @@ pub async fn lookup(callsign: &str) -> Option<CallsignInfo> {
         city: cs.addr2.unwrap_or_default(),
         state: cs.state.unwrap_or_default(),
         country: cs.country.unwrap_or_default(),
+        cq_zone: String::new(),
+        itu_zone: String::new(),
+        county: String::new(),
     })
 }

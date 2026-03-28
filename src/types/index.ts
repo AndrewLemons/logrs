@@ -93,6 +93,9 @@ export interface CallsignInfo {
   city: string;
   state: string;
   country: string;
+  cq_zone: string;
+  itu_zone: string;
+  county: string;
 }
 
 export interface PotaPark {
@@ -159,8 +162,37 @@ export interface TemplateField {
   lookup?: "pota" | "sota";
 }
 
+// Competition mode configuration (stored in template JSON)
+export interface ScoringConfig {
+  points_per_qso: number;
+  bonus_per_new_multiplier: number;
+  use_band_multipliers: boolean;
+  use_mode_multipliers: boolean;
+}
+
+export interface MultiplierValue {
+  id: string;
+  label: string;
+  group?: string;
+}
+
+export interface MultiplierConfig {
+  field: string;
+  label: string;
+  values: MultiplierValue[];
+  grid_columns: number;
+}
+
+export interface CompetitionConfig {
+  enabled: boolean;
+  name: string;
+  scoring: ScoringConfig;
+  multipliers: MultiplierConfig;
+}
+
 export interface TemplateDef {
   fields: TemplateField[];
+  competition?: CompetitionConfig;
 }
 
 export const BANDS = [
@@ -201,6 +233,14 @@ export const AVAILABLE_FIELDS: Array<{
   { id: "name", label: "Name", type: "text", category: "qso", group: "Contact" },
   { id: "their_grid", label: "Their Grid", type: "text", category: "qso", group: "Contact" },
   { id: "notes", label: "Notes", type: "text", category: "qso", group: "Optional" },
+  // Contest
+  { id: "state", label: "State/Province", type: "text", category: "qso", group: "Contest" },
+  { id: "country", label: "Country", type: "text", category: "qso", group: "Contest" },
+  { id: "cq_zone", label: "CQ Zone", type: "text", category: "qso", group: "Contest" },
+  { id: "itu_zone", label: "ITU Zone", type: "text", category: "qso", group: "Contest" },
+  { id: "exchange", label: "Exchange", type: "text", category: "qso", group: "Contest" },
+  { id: "serial_sent", label: "Serial Sent", type: "numeric", category: "qso", group: "Contest" },
+  { id: "serial_recv", label: "Serial Recv", type: "numeric", category: "qso", group: "Contest" },
 ];
 
 /** Parse a QSO's data_json into a Record */

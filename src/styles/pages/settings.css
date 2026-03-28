@@ -72,3 +72,22 @@
   background: var(--color-bg-elevated);
   border-radius: var(--radius-sm);
 }
+
+/* ===== QRZ Credentials ===== */
+
+.settings-qrz-input {
+  max-width: 280px;
+}
+
+.settings-qrz-status {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.settings-qrz-status.ok {
+  color: var(--color-success);
+}
+
+.settings-qrz-status.error {
+  color: var(--color-error);
+}

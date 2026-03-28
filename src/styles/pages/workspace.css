@@ -223,3 +223,226 @@ select.station-field-input {
   flex: 1;
   min-height: 300px;
 }
+
+/* ===== Competition Panel ===== */
+
+.competition-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  gap: 0;
+}
+
+.competition-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.competition-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.competition-stat.primary .competition-stat-value {
+  color: var(--color-primary);
+  font-size: var(--text-xl);
+}
+
+.competition-stat-value {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-text);
+}
+
+.competition-stat-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 600;
+}
+
+.competition-filters {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.competition-filter-select {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--text-sm);
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  outline: none;
+  cursor: pointer;
+}
+
+.competition-filter-select:focus {
+  border-color: var(--color-input-focus);
+}
+
+/* Progress bar */
+
+.competition-progress-bar {
+  height: 4px;
+  background: var(--color-bg-elevated);
+  flex-shrink: 0;
+}
+
+.competition-progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  transition: width 0.4s ease;
+  border-radius: 0 2px 2px 0;
+}
+
+/* Multiplier Grid */
+
+.competition-grid-wrapper {
+  padding: var(--space-lg);
+  flex: 1;
+}
+
+.competition-grid-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: var(--space-sm);
+}
+
+.competition-grid {
+  display: grid;
+  gap: 4px;
+}
+
+.competition-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px var(--space-xs);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  cursor: default;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  min-height: 40px;
+  position: relative;
+}
+
+.competition-cell.not-worked {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.competition-cell.worked {
+  background: rgba(22, 163, 74, 0.1);
+  border-color: var(--color-success);
+  color: var(--color-success);
+  cursor: pointer;
+}
+
+.competition-cell.worked:hover {
+  background: rgba(22, 163, 74, 0.18);
+}
+
+.competition-cell-id {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: 0.3px;
+}
+
+.competition-cell-count {
+  font-size: 9px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* Band breakdown */
+
+.competition-band-breakdown {
+  padding: 0 var(--space-lg) var(--space-lg);
+}
+
+.competition-band-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.competition-band-chip {
+  font-size: var(--text-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+}
+
+.competition-band-chip strong {
+  color: var(--color-text);
+}
+
+/* Tooltip */
+
+.competition-tooltip {
+  position: fixed;
+  z-index: 1000;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  box-shadow: var(--shadow-md);
+  min-width: 160px;
+  pointer-events: none;
+}
+
+.competition-tooltip-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.competition-tooltip-count {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.competition-tooltip-row {
+  display: flex;
+  gap: var(--space-sm);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  padding: 1px 0;
+}
+
+.competition-tooltip-call {
+  font-weight: 600;
+  color: var(--color-text);
+  min-width: 70px;
+}
+
+.competition-tooltip-more {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin-top: 2px;
+}

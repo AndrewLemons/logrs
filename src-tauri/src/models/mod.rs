@@ -96,6 +96,9 @@ pub struct CallsignInfo {
     pub city: String,
     pub state: String,
     pub country: String,
+    pub cq_zone: String,
+    pub itu_zone: String,
+    pub county: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -6,6 +6,7 @@ import StationBar from "../components/workspace/StationBar";
 import QsoEntryForm from "../components/workspace/QsoEntryForm";
 import LogTable from "../components/workspace/LogTable";
 import QsoMap from "../components/workspace/QsoMap";
+import CompetitionPanel from "../components/workspace/CompetitionPanel";
 import EmptyState from "../components/shared/EmptyState";
 import Modal from "../components/shared/Modal";
 import ParkAutocomplete from "../components/shared/ParkAutocomplete";
@@ -73,7 +74,8 @@ export default function Workspace() {
   }
 
   // --- Activity panel ---
-  const [activeTab, setActiveTab] = createSignal<"log" | "map">("log");
+  const [activeTab, setActiveTab] = createSignal<"log" | "map" | "competition">("log");
+  const competitionConfig = () => templateDef()?.competition ?? null;
 
   // --- Log list state ---
   const [search, setSearch] = createSignal("");
@@ -177,6 +179,14 @@ export default function Workspace() {
             >
               Map View
             </button>
+            <Show when={competitionConfig()?.enabled}>
+              <button
+                class={`activity-tab ${activeTab() === "competition" ? "active" : ""}`}
+                onClick={() => setActiveTab("competition")}
+              >
+                Competition
+              </button>
+            </Show>
             <div class="toolbar-spacer" />
             <button class="btn btn-secondary btn-sm" onClick={exportAdif}>
               Export ADIF
@@ -208,6 +218,14 @@ export default function Workspace() {
             logData={logData()}
             visible={activeTab() === "map"}
           />
+
+          <Show when={competitionConfig()?.enabled}>
+            <CompetitionPanel
+              competition={competitionConfig()!}
+              logVersion={logVersion()}
+              visible={activeTab() === "competition"}
+            />
+          </Show>
         </div>
       </Show>
 

@@ -10,6 +10,13 @@ export default function Settings() {
   const [syncStatus, setSyncStatus] = createSignal<SyncStatus | null>(null);
   const [progress, setProgress] = createSignal<SyncProgress | null>(null);
 
+  // QRZ credentials
+  const [qrzUsername, setQrzUsername] = createSignal("");
+  const [qrzPassword, setQrzPassword] = createSignal("");
+  const [qrzTesting, setQrzTesting] = createSignal(false);
+  const [qrzSaving, setQrzSaving] = createSignal(false);
+  const [qrzStatus, setQrzStatus] = createSignal<"idle" | "ok" | "error">("idle");
+
   const isBusy = () => manualSyncing() !== null || syncInProgress();
 
   let unlisten: (() => void) | null = null;
@@ -18,6 +25,14 @@ export default function Settings() {
     try {
       const status = await invoke<SyncStatus>("get_sync_status");
       setSyncStatus(status);
+    } catch (_) {}
+
+    // Load QRZ credentials
+    try {
+      const [u, p] = await invoke<[string, string]>("get_qrz_credentials_cmd");
+      setQrzUsername(u);
+      setQrzPassword(p);
+      if (u && p) setQrzStatus("ok");
     } catch (_) {}
 
     unlisten = await listen<SyncProgress>("sync-progress", (event) => {
@@ -88,6 +103,83 @@ export default function Settings() {
           <span class="settings-row-label">
             Current: {theme() === "dark" ? "Dark" : "Light"} mode
           </span>
+        </div>
+      </div>
+
+      <div class="card settings-card">
+        <h3>Callsign Lookup</h3>
+        <p>
+          Configure QRZ.com credentials for enhanced callsign lookups with state, country, CQ zone, and ITU zone data. Falls back to HamDB when QRZ is unavailable.
+        </p>
+        <div class="settings-stack" style={{ "margin-top": "var(--space-md)" }}>
+          <div class="form-group">
+            <label class="form-label">QRZ Username</label>
+            <input
+              class="form-input settings-qrz-input"
+              type="text"
+              value={qrzUsername()}
+              onInput={(e) => { setQrzUsername(e.currentTarget.value); setQrzStatus("idle"); }}
+              placeholder="Callsign"
+              autocomplete="username"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">QRZ Password</label>
+            <input
+              class="form-input settings-qrz-input"
+              type="password"
+              value={qrzPassword()}
+              onInput={(e) => { setQrzPassword(e.currentTarget.value); setQrzStatus("idle"); }}
+              placeholder="Password"
+              autocomplete="current-password"
+            />
+          </div>
+          <div class="settings-row">
+            <button
+              class="btn btn-secondary btn-sm"
+              disabled={qrzTesting() || !qrzUsername() || !qrzPassword()}
+              onClick={async () => {
+                setQrzTesting(true);
+                try {
+                  await invoke("test_qrz_credentials", { username: qrzUsername(), password: qrzPassword() });
+                  setQrzStatus("ok");
+                  addToast("QRZ credentials verified", "success");
+                } catch (err) {
+                  setQrzStatus("error");
+                  addToast(`QRZ login failed: ${err}`, "error");
+                }
+                setQrzTesting(false);
+              }}
+            >
+              {qrzTesting() ? "Testing…" : "Test Connection"}
+            </button>
+            <button
+              class="btn btn-primary btn-sm"
+              disabled={qrzSaving() || !qrzUsername() || !qrzPassword()}
+              onClick={async () => {
+                setQrzSaving(true);
+                try {
+                  await invoke("set_qrz_credentials", { username: qrzUsername(), password: qrzPassword() });
+                  addToast("QRZ credentials saved", "success");
+                  setQrzStatus("ok");
+                } catch (err) {
+                  addToast(`Error saving credentials: ${err}`, "error");
+                }
+                setQrzSaving(false);
+              }}
+            >
+              {qrzSaving() ? "Saving…" : "Save"}
+            </button>
+            <Show when={qrzStatus() === "ok"}>
+              <span class="settings-qrz-status ok">Connected</span>
+            </Show>
+            <Show when={qrzStatus() === "error"}>
+              <span class="settings-qrz-status error">Login failed</span>
+            </Show>
+          </div>
+          <p class="settings-sync-detail">
+            Without QRZ credentials, lookups use HamDB (name, grid, state, country only).
+          </p>
         </div>
       </div>
 

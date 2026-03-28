@@ -2,7 +2,9 @@ import { createSignal, createResource, For, Show } from "solid-js";
 import { invoke } from "@tauri-apps/api/core";
 import { addToast, activeTemplate, setActiveTemplate } from "../stores/app";
 import { AVAILABLE_FIELDS, BANDS, MODES } from "../types";
-import type { Template, TemplateDef, TemplateField, FieldCategory } from "../types";
+import type { Template, TemplateDef, TemplateField, FieldCategory, CompetitionConfig } from "../types";
+import { COMPETITION_PRESETS } from "../utils/competition";
+import type { CompetitionPreset } from "../utils/competition";
 import Modal from "../components/shared/Modal";
 import PageHeader from "../components/shared/PageHeader";
 import Card from "../components/shared/Card";
@@ -15,6 +17,8 @@ export default function Templates() {
   // Template editor state
   const [name, setName] = createSignal("");
   const [fields, setFields] = createSignal<TemplateField[]>([]);
+  const [competitionEnabled, setCompetitionEnabled] = createSignal(false);
+  const [competitionConfig, setCompetitionConfig] = createSignal<CompetitionConfig | null>(null);
 
   function openNew() {
     setName("");
@@ -26,6 +30,8 @@ export default function Templates() {
       { id: "mode", label: "Mode", type: "dropdown", category: "station", required: true, persistent: true, show_in_table: true, options: MODES },
       { id: "frequency", label: "Frequency", type: "text", category: "station", required: false, persistent: true, show_in_table: true },
     ]);
+    setCompetitionEnabled(false);
+    setCompetitionConfig(null);
     setCreating(true);
     setEditing(null);
   }
@@ -35,8 +41,17 @@ export default function Templates() {
     try {
       const def: TemplateDef = JSON.parse(t.json_definition);
       setFields([...def.fields]);
+      if (def.competition?.enabled) {
+        setCompetitionEnabled(true);
+        setCompetitionConfig({ ...def.competition });
+      } else {
+        setCompetitionEnabled(false);
+        setCompetitionConfig(null);
+      }
     } catch {
       setFields([]);
+      setCompetitionEnabled(false);
+      setCompetitionConfig(null);
     }
     setEditing(t);
     setCreating(false);
@@ -45,6 +60,8 @@ export default function Templates() {
   function closeEditor() {
     setEditing(null);
     setCreating(false);
+    setCompetitionEnabled(false);
+    setCompetitionConfig(null);
   }
 
   function isFieldIncluded(id: string) {
@@ -83,6 +100,36 @@ export default function Templates() {
     setFields((prev) => prev.map((f, i) => (i === idx ? { ...f, ...updates } : f)));
   }
 
+  function applyPreset(preset: CompetitionPreset) {
+    setCompetitionConfig({ ...preset.config });
+    // Auto-add required fields if missing
+    for (const fieldId of preset.required_fields) {
+      if (!fields().some(f => f.id === fieldId)) {
+        const avail = AVAILABLE_FIELDS.find(a => a.id === fieldId);
+        if (avail) {
+          setFields(prev => [...prev, {
+            id: avail.id, label: avail.label, type: avail.type, category: avail.category,
+            required: false, persistent: false, show_in_table: true,
+            ...(avail.default ? { default: avail.default } : {}),
+            ...(avail.options ? { options: avail.options } : {}),
+          }]);
+        }
+      }
+    }
+  }
+
+  function updateCompetition(updates: Partial<CompetitionConfig>) {
+    setCompetitionConfig(prev => prev ? { ...prev, ...updates } : null);
+  }
+
+  function updateScoring(updates: Partial<CompetitionConfig["scoring"]>) {
+    setCompetitionConfig(prev => prev ? { ...prev, scoring: { ...prev.scoring, ...updates } } : null);
+  }
+
+  function updateMultipliers(updates: Partial<CompetitionConfig["multipliers"]>) {
+    setCompetitionConfig(prev => prev ? { ...prev, multipliers: { ...prev.multipliers, ...updates } } : null);
+  }
+
   async function saveTemplate() {
     const n = name().trim();
     if (!n) {
@@ -94,14 +141,20 @@ export default function Templates() {
       return;
     }
     const def: TemplateDef = { fields: fields() };
+    if (competitionEnabled() && competitionConfig()) {
+      def.competition = competitionConfig()!;
+    }
     const jsonDef = JSON.stringify(def);
 
     try {
       if (editing()) {
         await invoke("update_template", {
-          id: editing()!.id,
-          name: n,
-          jsonDefinition: jsonDef,
+          template: {
+            id: editing()!.id,
+            name: n,
+            json_definition: jsonDef,
+            is_builtin: editing()!.is_builtin,
+          },
         });
         addToast("Template updated", "success");
         if (activeTemplate()?.id === editing()!.id) {
@@ -280,6 +333,136 @@ export default function Templates() {
                     )}
                   </For>
                 </div>
+              </div>
+            </Show>
+
+            <Show when={fields().length > 0}>
+              <div class="template-editor-section">
+                <h3>Competition Mode</h3>
+                <p class="template-editor-hint">Enable competition tracking for this template</p>
+
+                <label class="field-toggle competition-toggle" classList={{ active: competitionEnabled() }}>
+                  <input
+                    type="checkbox"
+                    checked={competitionEnabled()}
+                    onChange={(e) => {
+                      const enabled = e.currentTarget.checked;
+                      setCompetitionEnabled(enabled);
+                      if (enabled && !competitionConfig()) {
+                        // Default to first preset
+                        applyPreset(COMPETITION_PRESETS[0]);
+                      } else if (!enabled) {
+                        setCompetitionConfig(null);
+                      }
+                    }}
+                  />
+                  Enable Competition Mode
+                </label>
+
+                <Show when={competitionEnabled() && competitionConfig()}>
+                  <div class="competition-config">
+                    <div class="form-group">
+                      <label class="form-label">Preset</label>
+                      <select
+                        class="form-select"
+                        value={COMPETITION_PRESETS.find(p => p.config.name === competitionConfig()?.name)?.id ?? "custom"}
+                        onChange={(e) => {
+                          const preset = COMPETITION_PRESETS.find(p => p.id === e.currentTarget.value);
+                          if (preset) applyPreset(preset);
+                        }}
+                      >
+                        <For each={COMPETITION_PRESETS}>
+                          {(p) => <option value={p.id}>{p.name}</option>}
+                        </For>
+                        <option value="custom">Custom</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Competition Name</label>
+                      <input
+                        class="form-input"
+                        type="text"
+                        value={competitionConfig()!.name}
+                        onInput={(e) => updateCompetition({ name: e.currentTarget.value })}
+                      />
+                    </div>
+
+                    <div class="competition-config-row">
+                      <div class="form-group">
+                        <label class="form-label">Points per QSO</label>
+                        <input
+                          class="form-input"
+                          type="number"
+                          min="0"
+                          value={competitionConfig()!.scoring.points_per_qso}
+                          onInput={(e) => updateScoring({ points_per_qso: Number(e.currentTarget.value) || 0 })}
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Bonus per New Multiplier</label>
+                        <input
+                          class="form-input"
+                          type="number"
+                          min="0"
+                          value={competitionConfig()!.scoring.bonus_per_new_multiplier}
+                          onInput={(e) => updateScoring({ bonus_per_new_multiplier: Number(e.currentTarget.value) || 0 })}
+                        />
+                      </div>
+                    </div>
+
+                    <div class="competition-config-row">
+                      <label class="field-config-check">
+                        <input
+                          type="checkbox"
+                          checked={competitionConfig()!.scoring.use_band_multipliers}
+                          onChange={(e) => updateScoring({ use_band_multipliers: e.currentTarget.checked })}
+                        />
+                        Count per band (each band = separate multiplier)
+                      </label>
+                      <label class="field-config-check">
+                        <input
+                          type="checkbox"
+                          checked={competitionConfig()!.scoring.use_mode_multipliers}
+                          onChange={(e) => updateScoring({ use_mode_multipliers: e.currentTarget.checked })}
+                        />
+                        Count per mode
+                      </label>
+                    </div>
+
+                    <div class="competition-config-row">
+                      <div class="form-group">
+                        <label class="form-label">Multiplier Field</label>
+                        <select
+                          class="form-select"
+                          value={competitionConfig()!.multipliers.field}
+                          onChange={(e) => updateMultipliers({ field: e.currentTarget.value })}
+                        >
+                          <For each={fields().filter(f => f.category === "qso")}>
+                            {(f) => <option value={f.id}>{f.label}</option>}
+                          </For>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Grid Columns</label>
+                        <input
+                          class="form-input"
+                          type="number"
+                          min="1"
+                          max="20"
+                          value={competitionConfig()!.multipliers.grid_columns}
+                          onInput={(e) => updateMultipliers({ grid_columns: Number(e.currentTarget.value) || 5 })}
+                        />
+                      </div>
+                    </div>
+
+                    <div class="competition-mult-preview">
+                      <span class="form-label">
+                        {competitionConfig()!.multipliers.values.length} multiplier values defined
+                      </span>
+                    </div>
+                  </div>
+                </Show>
               </div>
             </Show>
 

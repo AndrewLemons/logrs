@@ -199,3 +199,17 @@ pub fn check_duplicate(
         .map_err(|e| e.to_string())?;
     Ok(count > 0)
 }
+
+#[tauri::command]
+pub fn get_all_qso_data(db: State<DbState>, logbook_id: i64) -> Result<Vec<String>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    let mut stmt = conn
+        .prepare("SELECT data_json FROM qsos WHERE logbook_id = ?1 ORDER BY datetime DESC")
+        .map_err(|e| e.to_string())?;
+    let data = stmt
+        .query_map([logbook_id], |row| row.get::<_, String>(0))
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+    Ok(data)
+}

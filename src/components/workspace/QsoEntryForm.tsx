@@ -114,6 +114,14 @@ export default function QsoEntryForm(props: QsoEntryFormProps) {
           setAutoFilledValue("name", info.name);
         if (info.grid && (autoFilledFields.has("their_grid") || !props.qsoValues.their_grid))
           setAutoFilledValue("their_grid", info.grid);
+        if (info.state && (autoFilledFields.has("state") || !props.qsoValues.state))
+          setAutoFilledValue("state", info.state);
+        if (info.country && (autoFilledFields.has("country") || !props.qsoValues.country))
+          setAutoFilledValue("country", info.country);
+        if (info.cq_zone && (autoFilledFields.has("cq_zone") || !props.qsoValues.cq_zone))
+          setAutoFilledValue("cq_zone", info.cq_zone);
+        if (info.itu_zone && (autoFilledFields.has("itu_zone") || !props.qsoValues.itu_zone))
+          setAutoFilledValue("itu_zone", info.itu_zone);
       } else {
         setLookupStatus("not-found");
       }
@@ -217,6 +225,10 @@ export default function QsoEntryForm(props: QsoEntryFormProps) {
         const patches: Record<string, string> = {};
         if (info?.name) patches.name = info.name;
         if (info?.grid) patches.their_grid = info.grid;
+        if (info?.state) patches.state = info.state;
+        if (info?.country) patches.country = info.country;
+        if (info?.cq_zone) patches.cq_zone = info.cq_zone;
+        if (info?.itu_zone) patches.itu_zone = info.itu_zone;
         if (spot?.reference) patches.their_park = spot.reference;
         if (Object.keys(patches).length > 0) patchQsoBg(savedQso, patches);
       });
