@@ -1,0 +1,180 @@
+/* ===== Template Editor ===== */
+
+.template-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-width: 560px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: var(--space-xl);
+}
+
+.template-editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.template-editor-section h3 {
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.template-editor-hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+/* ===== Field Groups ===== */
+
+.field-group {
+  margin-bottom: var(--space-sm);
+}
+
+.field-group-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.field-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.field-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  user-select: none;
+}
+
+.field-toggle input {
+  display: none;
+}
+
+.field-toggle:hover {
+  background: var(--color-bg-elevated);
+}
+
+.field-toggle.active {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ===== Field Config List ===== */
+
+.field-config-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.field-config-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 6px var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface);
+}
+
+.field-config-order {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.field-config-order .btn-icon {
+  padding: 1px var(--space-xs);
+  font-size: 10px;
+}
+
+.field-config-name {
+  font-size: var(--text-base);
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.field-config-select {
+  padding: 3px 6px !important;
+  font-size: var(--text-sm) !important;
+  width: 90px;
+}
+
+.field-config-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.field-config-default {
+  padding: 3px 6px !important;
+  font-size: var(--text-sm) !important;
+  width: 80px;
+}
+
+/* ===== Template Preview ===== */
+
+.template-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+}
+
+.preview-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.preview-group-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  min-width: 90px;
+}
+
+.preview-chip {
+  font-size: var(--text-xs);
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+.preview-chip.station {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--color-primary);
+}
+
+.preview-chip.qso {
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--color-success);
+}
+
+.preview-chip.table {
+  background: rgba(202, 138, 4, 0.1);
+  color: var(--color-warning);
+}

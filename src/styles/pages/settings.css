@@ -1,0 +1,74 @@
+/* ===== Settings Page ===== */
+
+.settings-section {
+  margin-bottom: var(--space-2xl);
+}
+
+.settings-section h2 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.settings-card {
+  max-width: 600px;
+  margin-bottom: var(--space-lg);
+}
+
+.settings-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+}
+
+.settings-card p {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.settings-row-label {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+}
+
+.settings-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.settings-sync-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.settings-sync-detail {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.settings-progress {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  padding: var(--space-sm);
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-sm);
+}
+
+.settings-bg-sync {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-sm);
+}
