@@ -15,19 +15,19 @@ export { activeTemplate, setActiveTemplate };
 
 // Toast notifications
 export interface Toast {
-  id: number;
-  message: string;
-  type: "success" | "error" | "info";
+	id: number;
+	message: string;
+	type: "success" | "error" | "info";
 }
 const [toasts, setToasts] = createSignal<Toast[]>([]);
 let toastId = 0;
 
 export function addToast(message: string, type: Toast["type"] = "info") {
-  const id = ++toastId;
-  setToasts((prev) => [...prev, { id, message, type }]);
-  setTimeout(() => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, 4000);
+	const id = ++toastId;
+	setToasts((prev) => [...prev, { id, message, type }]);
+	setTimeout(() => {
+		setToasts((prev) => prev.filter((t) => t.id !== id));
+	}, 4000);
 }
 
 export { toasts };

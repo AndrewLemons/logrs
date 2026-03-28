@@ -3,71 +3,84 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import "./styles/index.css";
 import Sidebar from "./components/layout/Sidebar";
-import { toasts, setActiveProfile, setActiveLogbook, setActiveTemplate, addToast, setSyncInProgress } from "./stores/app";
+import {
+	toasts,
+	setActiveProfile,
+	setActiveLogbook,
+	setActiveTemplate,
+	addToast,
+	setSyncInProgress,
+} from "./stores/app";
 import { initStationDefaults } from "./stores/session";
 import type { Profile, Logbook, Template } from "./types";
 
 function App(props: ParentProps) {
-  let unlistenSyncStarted: (() => void) | undefined;
-  let unlistenSyncCompleted: (() => void) | undefined;
+	let unlistenSyncStarted: (() => void) | undefined;
+	let unlistenSyncCompleted: (() => void) | undefined;
 
-  onMount(async () => {
-    // Load active profile
-    try {
-      const profile = await invoke<Profile | null>("get_active_profile");
-      if (profile) {
-        setActiveProfile(profile);
-        initStationDefaults({
-          band: profile.default_band,
-          mode: profile.default_mode,
-          power: profile.default_power,
-          my_grid: profile.grid,
-          my_park: profile.default_park,
-          my_summit: profile.default_summit,
-        });
-      }
-    } catch (_) { /* no active profile yet */ }
+	onMount(async () => {
+		// Load active profile
+		try {
+			const profile = await invoke<Profile | null>("get_active_profile");
+			if (profile) {
+				setActiveProfile(profile);
+				initStationDefaults({
+					band: profile.default_band,
+					mode: profile.default_mode,
+					power: profile.default_power,
+					my_grid: profile.grid,
+					my_park: profile.default_park,
+					my_summit: profile.default_summit,
+				});
+			}
+		} catch (_) {
+			/* no active profile yet */
+		}
 
-    // Load active logbook
-    try {
-      const logbook = await invoke<Logbook | null>("get_active_logbook");
-      if (logbook) {
-        setActiveLogbook(logbook);
-        const template = await invoke<Template>("get_template", { id: logbook.template_id });
-        setActiveTemplate(template);
-      }
-    } catch (_) { /* no active logbook yet */ }
+		// Load active logbook
+		try {
+			const logbook = await invoke<Logbook | null>("get_active_logbook");
+			if (logbook) {
+				setActiveLogbook(logbook);
+				const template = await invoke<Template>("get_template", {
+					id: logbook.template_id,
+				});
+				setActiveTemplate(template);
+			}
+		} catch (_) {
+			/* no active logbook yet */
+		}
 
-    // Listen for background sync events
-    unlistenSyncStarted = await listen("background-sync-started", () => {
-      setSyncInProgress(true);
-      addToast("Syncing reference data in background…", "info");
-    });
-    unlistenSyncCompleted = await listen("background-sync-completed", () => {
-      setSyncInProgress(false);
-      addToast("Reference data sync complete", "success");
-    });
-  });
+		// Listen for background sync events
+		unlistenSyncStarted = await listen("background-sync-started", () => {
+			setSyncInProgress(true);
+			addToast("Syncing reference data in background…", "info");
+		});
+		unlistenSyncCompleted = await listen("background-sync-completed", () => {
+			setSyncInProgress(false);
+			addToast("Reference data sync complete", "success");
+		});
+	});
 
-  onCleanup(() => {
-    unlistenSyncStarted?.();
-    unlistenSyncCompleted?.();
-  });
+	onCleanup(() => {
+		unlistenSyncStarted?.();
+		unlistenSyncCompleted?.();
+	});
 
-  return (
-    <div class="app-layout">
-      <Sidebar />
-      <div class="app-main">
-        <div class="app-drag-region" data-tauri-drag-region />
-        <div class="app-content">{props.children}</div>
-      </div>
-      <div class="toast-container">
-        <For each={toasts()}>
-          {(toast) => <div class={`toast ${toast.type}`}>{toast.message}</div>}
-        </For>
-      </div>
-    </div>
-  );
+	return (
+		<div class="app-layout">
+			<Sidebar />
+			<div class="app-main">
+				<div class="app-drag-region" data-tauri-drag-region />
+				<div class="app-content">{props.children}</div>
+			</div>
+			<div class="toast-container">
+				<For each={toasts()}>
+					{(toast) => <div class={`toast ${toast.type}`}>{toast.message}</div>}
+				</For>
+			</div>
+		</div>
+	);
 }
 
 export default App;

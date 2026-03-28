@@ -1,8 +1,8 @@
 use rusqlite::Connection;
 
 const MIGRATIONS: &[&str] = &[
-    // V1: Initial schema
-    r#"
+	// V1: Initial schema
+	r#"
     CREATE TABLE IF NOT EXISTS profiles (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         callsign TEXT NOT NULL,
@@ -74,8 +74,8 @@ const MIGRATIONS: &[&str] = &[
         value TEXT NOT NULL DEFAULT ''
     );
     "#,
-    // V1 seed: built-in templates
-    r#"
+	// V1 seed: built-in templates
+	r#"
     INSERT OR IGNORE INTO templates (id, name, json_definition, is_builtin) VALUES
     (1, 'General', '{
         "fields": [
@@ -128,8 +128,8 @@ const MIGRATIONS: &[&str] = &[
     INSERT OR IGNORE INTO app_state (key, value) VALUES ('active_profile_id', '');
     INSERT OR IGNORE INTO app_state (key, value) VALUES ('active_logbook_id', '');
     "#,
-    // V2: Migrate QSOs to data_json schema + update template definitions with category
-    r#"
+	// V2: Migrate QSOs to data_json schema + update template definitions with category
+	r#"
     CREATE TABLE qsos_v2 (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         logbook_id INTEGER NOT NULL,
@@ -216,8 +216,8 @@ const MIGRATIONS: &[&str] = &[
         ]
     }' WHERE id = 3;
     "#,
-    // V3: Proper POTA/SOTA tables for offline sync
-    r#"
+	// V3: Proper POTA/SOTA tables for offline sync
+	r#"
     CREATE TABLE IF NOT EXISTS pota_parks (
         reference TEXT PRIMARY KEY,
         name TEXT NOT NULL DEFAULT '',
@@ -258,28 +258,28 @@ const MIGRATIONS: &[&str] = &[
 ];
 
 pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {
-    conn.execute_batch(
-        "CREATE TABLE IF NOT EXISTS schema_version (version INTEGER NOT NULL DEFAULT 0);",
-    )?;
+	conn.execute_batch(
+		"CREATE TABLE IF NOT EXISTS schema_version (version INTEGER NOT NULL DEFAULT 0);",
+	)?;
 
-    let current_version: i32 = conn
-        .query_row(
-            "SELECT COALESCE(MAX(version), 0) FROM schema_version",
-            [],
-            |row| row.get(0),
-        )
-        .unwrap_or(0);
+	let current_version: i32 = conn
+		.query_row(
+			"SELECT COALESCE(MAX(version), 0) FROM schema_version",
+			[],
+			|row| row.get(0),
+		)
+		.unwrap_or(0);
 
-    for (i, migration) in MIGRATIONS.iter().enumerate() {
-        let version = (i + 1) as i32;
-        if version > current_version {
-            conn.execute_batch(migration)?;
-            conn.execute(
-                "INSERT INTO schema_version (version) VALUES (?1)",
-                [version],
-            )?;
-        }
-    }
+	for (i, migration) in MIGRATIONS.iter().enumerate() {
+		let version = (i + 1) as i32;
+		if version > current_version {
+			conn.execute_batch(migration)?;
+			conn.execute(
+				"INSERT INTO schema_version (version) VALUES (?1)",
+				[version],
+			)?;
+		}
+	}
 
-    Ok(())
+	Ok(())
 }
