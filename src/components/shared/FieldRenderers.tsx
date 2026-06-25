@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For, Show } from "solid-js";
 import type { TemplateField } from "../../types";
 import ParkAutocomplete from "./ParkAutocomplete";
 
@@ -7,6 +7,35 @@ interface StationFieldProps {
 	value: string;
 	onChange: (value: string) => void;
 	onSelectGrid?: (grid: string) => void;
+	/** True while this field's value is being driven live by the radio integration. */
+	radioLive?: boolean;
+	/** True when the user has overridden a radio-driven field; click to release it. */
+	radioOverridden?: boolean;
+	onReleaseOverride?: () => void;
+}
+
+function RadioIndicator(props: StationFieldProps) {
+	return (
+		<Show when={props.radioLive || props.radioOverridden}>
+			<Show
+				when={props.radioLive}
+				fallback={
+					<button
+						type="button"
+						class="station-field-radio-dot overridden"
+						title="Manually overridden — click to resume live radio updates"
+						onClick={props.onReleaseOverride}
+					>
+						●
+					</button>
+				}
+			>
+				<span class="station-field-radio-dot live" title="Live from radio">
+					●
+				</span>
+			</Show>
+		</Show>
+	);
 }
 
 /** Renders a station-level field (compact inline style for station bar) */
@@ -14,7 +43,10 @@ export function StationField(props: StationFieldProps) {
 	if (props.field.type === "dropdown" && props.field.options) {
 		return (
 			<div class="station-field">
-				<label class="station-field-label">{props.field.label}</label>
+				<label class="station-field-label">
+					{props.field.label}
+					<RadioIndicator {...props} />
+				</label>
 				<select
 					class="station-field-input"
 					value={props.value}
@@ -45,7 +77,10 @@ export function StationField(props: StationFieldProps) {
 	}
 	return (
 		<div class="station-field">
-			<label class="station-field-label">{props.field.label}</label>
+			<label class="station-field-label">
+				{props.field.label}
+				<RadioIndicator {...props} />
+			</label>
 			<input
 				class="station-field-input"
 				type="text"

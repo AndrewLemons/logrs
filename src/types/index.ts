@@ -145,6 +145,27 @@ export interface SyncProgress {
 	label: string;
 }
 
+export interface RadioSettings {
+	enabled: boolean;
+	host: string;
+	port: number;
+}
+
+export type RadioStatus = "disabled" | "connecting" | "connected" | "disconnected";
+
+export interface RadioSnapshot {
+	status: RadioStatus;
+	frequency_hz: number | null;
+	band: string | null;
+	mode: string | null;
+}
+
+export interface RadioTestResult {
+	frequency_hz: number | null;
+	band: string | null;
+	mode: string | null;
+}
+
 // Template definition types (JSON-driven field system)
 export type FieldType = "text" | "numeric" | "dropdown" | "lookup" | "derived";
 export type FieldCategory = "station" | "qso";

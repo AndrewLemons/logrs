@@ -3,7 +3,13 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { addToast, syncInProgress } from "../stores/app";
 import PageHeader from "../components/shared/PageHeader";
-import type { SyncStatus, SyncProgress } from "../types";
+import type {
+	SyncStatus,
+	SyncProgress,
+	RadioSettings,
+	RadioSnapshot,
+	RadioTestResult,
+} from "../types";
 
 export default function Settings() {
 	const [manualSyncing, setManualSyncing] = createSignal<string | null>(null);
@@ -40,10 +46,19 @@ export default function Settings() {
 		unlisten = await listen<SyncProgress>("sync-progress", (event) => {
 			setProgress(event.payload);
 		});
+
+		await loadRadioSettings();
+		unlistenRadioSettings = await listen<RadioSnapshot>(
+			"radio-update",
+			(event) => {
+				setRadioSnapshot(event.payload);
+			},
+		);
 	});
 
 	onCleanup(() => {
 		if (unlisten) unlisten();
+		if (unlistenRadioSettings) unlistenRadioSettings();
 	});
 
 	async function loadSyncStatus() {
@@ -84,6 +99,86 @@ export default function Settings() {
 	function formatSyncDate(dateStr: string | null | undefined): string {
 		if (!dateStr) return "Never";
 		return dateStr.replace("T", " ").replace("Z", " UTC");
+	}
+
+	// Radio integration (Hamlib rigctld)
+	const [radioEnabled, setRadioEnabled] = createSignal(false);
+	const [radioHost, setRadioHost] = createSignal("127.0.0.1");
+	const [radioPort, setRadioPort] = createSignal("4532");
+	const [radioSaving, setRadioSaving] = createSignal(false);
+	const [radioTesting, setRadioTesting] = createSignal(false);
+	const [radioTestResult, setRadioTestResult] = createSignal<RadioTestResult | null>(
+		null,
+	);
+	const [radioTestError, setRadioTestError] = createSignal<string | null>(null);
+	const [radioSnapshot, setRadioSnapshot] = createSignal<RadioSnapshot | null>(
+		null,
+	);
+
+	let unlistenRadioSettings: (() => void) | null = null;
+
+	async function loadRadioSettings() {
+		try {
+			const settings = await invoke<RadioSettings>("get_radio_settings");
+			setRadioEnabled(settings.enabled);
+			setRadioHost(settings.host);
+			setRadioPort(String(settings.port));
+		} catch (_) {}
+		try {
+			const snap = await invoke<RadioSnapshot>("get_radio_snapshot");
+			setRadioSnapshot(snap);
+		} catch (_) {}
+	}
+
+	async function saveRadioSettings() {
+		setRadioSaving(true);
+		try {
+			await invoke("set_radio_settings", {
+				settings: {
+					enabled: radioEnabled(),
+					host: radioHost(),
+					port: parseInt(radioPort()) || 4532,
+				},
+			});
+			addToast("Radio settings saved", "success");
+		} catch (err) {
+			addToast(`Error saving radio settings: ${err}`, "error");
+		}
+		setRadioSaving(false);
+	}
+
+	async function testRadioConnection() {
+		setRadioTesting(true);
+		setRadioTestResult(null);
+		setRadioTestError(null);
+		try {
+			const result = await invoke<RadioTestResult>("test_radio_connection", {
+				host: radioHost(),
+				port: parseInt(radioPort()) || 4532,
+			});
+			setRadioTestResult(result);
+		} catch (err) {
+			setRadioTestError(String(err));
+		}
+		setRadioTesting(false);
+	}
+
+	function radioStatusLabel(status: RadioSnapshot["status"] | undefined): string {
+		switch (status) {
+			case "connected":
+				return "Connected";
+			case "connecting":
+				return "Connecting…";
+			case "disconnected":
+				return "Disconnected";
+			default:
+				return "Disabled";
+		}
+	}
+
+	function formatFrequency(hz: number | null | undefined): string {
+		if (hz == null) return "—";
+		return (hz / 1_000_000).toFixed(6) + " MHz";
 	}
 
 	return (
@@ -233,6 +328,100 @@ export default function Settings() {
 							</Show>
 							{progress()!.label}
 						</div>
+					</Show>
+				</div>
+			</div>
+
+			<div class="card settings-card">
+				<h3>Radio Integration</h3>
+				<p>
+					Automatically fill in frequency, band, and mode from your
+					transceiver via Hamlib's <code>rigctld</code>. Manually edited
+					fields are left alone until released back to the radio.
+				</p>
+				<div class="settings-stack" style={{ "margin-top": "var(--space-md)" }}>
+					<div class="form-group">
+						<label class="form-label settings-checkbox-label">
+							<input
+								type="checkbox"
+								checked={radioEnabled()}
+								onChange={(e) => setRadioEnabled(e.currentTarget.checked)}
+							/>
+							Enable Radio Integration
+						</label>
+					</div>
+					<div class="form-group">
+						<label class="form-label">Host</label>
+						<input
+							class="form-input settings-radio-input"
+							type="text"
+							value={radioHost()}
+							onInput={(e) => setRadioHost(e.currentTarget.value)}
+							placeholder="127.0.0.1"
+						/>
+					</div>
+					<div class="form-group">
+						<label class="form-label">Port</label>
+						<input
+							class="form-input settings-radio-input"
+							type="text"
+							value={radioPort()}
+							onInput={(e) => setRadioPort(e.currentTarget.value)}
+							placeholder="4532"
+						/>
+					</div>
+					<div class="settings-row">
+						<button
+							class="btn btn-secondary btn-sm"
+							type="button"
+							disabled={radioTesting() || !radioHost() || !radioPort()}
+							onClick={testRadioConnection}
+						>
+							{radioTesting() ? "Testing…" : "Test Connection"}
+						</button>
+						<button
+							class="btn btn-primary btn-sm"
+							type="button"
+							disabled={radioSaving()}
+							onClick={saveRadioSettings}
+						>
+							{radioSaving() ? "Saving…" : "Save"}
+						</button>
+						<Show when={radioEnabled()}>
+							<span class="settings-row">
+								<span
+									class={`status-dot ${
+										radioSnapshot()?.status === "connected"
+											? "success"
+											: radioSnapshot()?.status === "connecting"
+												? "warning"
+												: "error"
+									}`}
+								/>
+								{radioStatusLabel(radioSnapshot()?.status)}
+							</span>
+						</Show>
+					</div>
+
+					<Show when={radioTestResult()}>
+						<p class="settings-sync-detail">
+							Detected: {formatFrequency(radioTestResult()!.frequency_hz)}
+							{radioTestResult()!.band ? ` (${radioTestResult()!.band})` : ""}
+							{radioTestResult()!.mode ? ` · ${radioTestResult()!.mode}` : ""}
+						</p>
+					</Show>
+					<Show when={radioTestError()}>
+						<p class="settings-sync-detail" style={{ color: "var(--color-error)" }}>
+							Connection failed: {radioTestError()}
+						</p>
+					</Show>
+
+					<Show when={radioEnabled() && radioSnapshot()?.status === "connected"}>
+						<p class="settings-sync-detail">
+							Current Radio: {formatFrequency(radioSnapshot()?.frequency_hz)}
+							{radioSnapshot()?.band ? ` (${radioSnapshot()?.band})` : ""}
+							{radioSnapshot()?.mode ? ` · ${radioSnapshot()?.mode}` : " · mode unknown (digital sub-mode)"}
+						</p>
 					</Show>
 				</div>
 			</div>

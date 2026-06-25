@@ -74,6 +74,31 @@
 	text-transform: uppercase;
 	letter-spacing: 0.3px;
 	color: var(--color-text-secondary);
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.station-field-radio-dot {
+	font-size: 8px;
+	line-height: 1;
+	border: none;
+	background: none;
+	padding: 0;
+	cursor: default;
+}
+
+.station-field-radio-dot.live {
+	color: var(--color-success);
+}
+
+.station-field-radio-dot.overridden {
+	color: var(--color-text-secondary);
+	cursor: pointer;
+}
+
+.station-field-radio-dot.overridden:hover {
+	color: var(--color-warning);
 }
 
 .station-field-input {

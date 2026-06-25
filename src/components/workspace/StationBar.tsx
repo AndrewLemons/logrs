@@ -13,6 +13,9 @@ import {
 	initStationDefaults,
 	getStationField,
 	setStationField,
+	isRadioLive,
+	isRadioOverridden,
+	clearRadioOverride,
 } from "../../stores/session";
 import { StationField } from "../shared/FieldRenderers";
 import type { TemplateField, Profile, Logbook, Template } from "../../types";
@@ -102,6 +105,9 @@ export default function StationBar(props: StationBarProps) {
 										? (grid) => setStationField("my_grid", grid)
 										: undefined
 								}
+								radioLive={isRadioLive(field.id)}
+								radioOverridden={isRadioOverridden(field.id)}
+								onReleaseOverride={() => clearRadioOverride(field.id)}
 							/>
 						)}
 					</For>

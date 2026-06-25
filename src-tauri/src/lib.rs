@@ -2,6 +2,7 @@ mod commands;
 mod db;
 mod external;
 mod models;
+mod radio;
 
 use commands::reference::{is_sync_stale, run_pota_sync, run_sota_sync};
 use db::DbState;
@@ -29,12 +30,21 @@ pub fn run() {
 			// Wrap in Arc so it can be shared with the background task.
 			let db_arc = Arc::new(Mutex::new(conn));
 			let db_bg = db_arc.clone();
+			let db_radio = db_arc.clone();
 			app.manage(DbState(db_arc));
 
 			// Sync lock — shared between commands and background task.
 			let sync_lock = Arc::new(AtomicBool::new(false));
 			let sync_lock_bg = sync_lock.clone();
 			app.manage(SyncLock(sync_lock));
+
+			// Radio integration — background polling task, disabled by default.
+			let radio_settings = {
+				let conn = db_radio.lock().expect("failed to lock db for radio settings");
+				radio::load_settings(&conn)
+			};
+			let radio_manager = radio::spawn(app.handle().clone(), radio_settings);
+			app.manage(radio_manager);
 
 			// Background sync task.
 			let app_handle = app.handle().clone();
@@ -98,6 +108,11 @@ pub fn run() {
 			commands::reference::get_sync_status,
 			commands::reference::get_is_syncing,
 			commands::reference::lookup_pota_activator,
+			// Radio integration
+			commands::radio::get_radio_settings,
+			commands::radio::set_radio_settings,
+			commands::radio::get_radio_snapshot,
+			commands::radio::test_radio_connection,
 		])
 		.run(tauri::generate_context!())
 		.expect("error while running tauri application");

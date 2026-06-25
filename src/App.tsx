@@ -11,12 +11,17 @@ import {
 	addToast,
 	setSyncInProgress,
 } from "./stores/app";
-import { initStationDefaults } from "./stores/session";
-import type { Profile, Logbook, Template } from "./types";
+import {
+	initStationDefaults,
+	setRadioConnected,
+	setStationFieldFromRadio,
+} from "./stores/session";
+import type { Profile, Logbook, Template, RadioSnapshot } from "./types";
 
 function App(props: ParentProps) {
 	let unlistenSyncStarted: (() => void) | undefined;
 	let unlistenSyncCompleted: (() => void) | undefined;
+	let unlistenRadio: (() => void) | undefined;
 
 	onMount(async () => {
 		// Load active profile
@@ -60,11 +65,39 @@ function App(props: ParentProps) {
 			setSyncInProgress(false);
 			addToast("Reference data sync complete", "success");
 		});
+
+		// Live updates from the radio integration (see src-tauri/src/radio).
+		// Fields the user has manually overridden are left alone — see
+		// setStationFieldFromRadio in stores/session.ts.
+		try {
+			const snap = await invoke<RadioSnapshot>("get_radio_snapshot");
+			setRadioConnected(snap.status === "connected");
+			if (snap.status === "connected") {
+				if (snap.frequency_hz != null) {
+					setStationFieldFromRadio("frequency", String(snap.frequency_hz));
+				}
+				if (snap.band) setStationFieldFromRadio("band", snap.band);
+				if (snap.mode) setStationFieldFromRadio("mode", snap.mode);
+			}
+		} catch (_) {
+			/* radio integration unavailable */
+		}
+		unlistenRadio = await listen<RadioSnapshot>("radio-update", (event) => {
+			const snap = event.payload;
+			setRadioConnected(snap.status === "connected");
+			if (snap.status !== "connected") return;
+			if (snap.frequency_hz != null) {
+				setStationFieldFromRadio("frequency", String(snap.frequency_hz));
+			}
+			if (snap.band) setStationFieldFromRadio("band", snap.band);
+			if (snap.mode) setStationFieldFromRadio("mode", snap.mode);
+		});
 	});
 
 	onCleanup(() => {
 		unlistenSyncStarted?.();
 		unlistenSyncCompleted?.();
+		unlistenRadio?.();
 	});
 
 	return (

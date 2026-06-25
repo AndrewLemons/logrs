@@ -255,6 +255,12 @@ const MIGRATIONS: &[&str] = &[
     -- Clean up old reference_data blobs
     DELETE FROM reference_data WHERE ref_type IN ('POTA', 'SOTA');
     "#,
+	// V4: Radio integration (Hamlib rigctld) settings
+	r#"
+    INSERT OR IGNORE INTO app_state (key, value) VALUES ('radio_enabled', '0');
+    INSERT OR IGNORE INTO app_state (key, value) VALUES ('radio_host', '127.0.0.1');
+    INSERT OR IGNORE INTO app_state (key, value) VALUES ('radio_port', '4532');
+    "#,
 ];
 
 pub fn run_migrations(conn: &Connection) -> Result<(), rusqlite::Error> {

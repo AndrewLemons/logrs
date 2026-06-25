@@ -91,3 +91,16 @@
 .settings-qrz-status.error {
 	color: var(--color-error);
 }
+
+/* ===== Radio Integration ===== */
+
+.settings-checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: var(--space-sm);
+	cursor: pointer;
+}
+
+.settings-radio-input {
+	max-width: 200px;
+}
